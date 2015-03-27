@@ -3,7 +3,8 @@ from random import randint, uniform
 from row import Row
 from cell import Cell
 from state import State
-
+from multiprocessing import Process, Queue
+import time
 class ComplexQueryer(object):
 
     def __init__(self, session):
@@ -23,7 +24,7 @@ class ComplexQueryer(object):
         for x in range(0, num_ops):
             op_index = self.choose_op(prob_insert,prob_update,prob_delete)
             print self.mutable
-            if op_index == 0 or num_ops-x > 5: #insert
+            if op_index == 0 or num_ops-x > 50: #insert
                 (query, row, data) = self.insert()
                 if len(self.mutable) < 50:
                     self.add_to_plan(query)
@@ -83,16 +84,26 @@ class ComplexQueryer(object):
         else:
             c1 = self.intcount
             self.intcount += 1
-            c2 = randint(0, 50)
+            c2 = randint(0, 50) 
             return [c1, c2, c3, c4]
 
-    def query(self):
+    def loadqueries(self, queue):
         with open(self.planfile, 'r') as plan:
             for query in plan:
-                print query.rstrip()
-                self.session.execute(query.rstrip())
-        #go through everything in plan and query collecting errors (TODO)
-        #but for perf reasons - we will have to read and load in memory concurrently TODO!
+                queue.put(query.rstrip())
+
+    def query(self):
+        queue = Queue(maxsize=10000)        
+        p = Process(target=self.loadqueries, args=(queue,))
+        p.start()
+        time.sleep(1)
+        incomplete = True
+        while incomplete:
+            try:
+                query = queue.get(False, timeout=5)
+                self.session.execute(query)
+            except:
+                incomplete = False
 
     def insert(self):
         data = self.generate_row_data(False)
@@ -127,5 +138,5 @@ class ComplexQueryer(object):
     def delete(self, data, row):
         k1 = data[0]
         k2 = data[1]
-        query = "DELETE * FROM complextable where key1= " + k1 + " AND key2=" + k2 +";"
+        query = "DELETE * FROM complextable where key1= " + str(k1) + " AND key2=" + str(k2) +";"
         return query
