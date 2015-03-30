@@ -23,7 +23,6 @@ class ComplexQueryer(object):
         opsleft = True
         for x in range(0, num_ops):
             op_index = self.choose_op(prob_insert,prob_update,prob_delete)
-            print self.mutable
             if op_index == 0 or num_ops-x > 50: #insert
                 (query, row, data) = self.insert()
                 if len(self.mutable) < 50:
@@ -68,8 +67,6 @@ class ComplexQueryer(object):
 
     def get_mutable_row(self):
         index = randint(0, len(self.mutable)-1)
-        print len(self.mutable)
-        print index
 
         row = self.mutable[index]
         self.mutable.pop(index)
@@ -78,7 +75,6 @@ class ComplexQueryer(object):
     def generate_row_data(self, only_columns):
         c3 = str(uuid.uuid4()).replace('-', '')
         c4 = round(uniform(0.0, 1000000.0), 1)
-        print c4
         if only_columns:
             return [c3, c4]
         else:
