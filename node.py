@@ -1,12 +1,16 @@
-from fabric import *
+from fabric.api import *
+from nodetasks import *
 
-class NNode:
+class ValNode:
     
-    env.hosts()
-
     def __init__(self, address):
-        self.address = address
-        env.hosts = [address]
+        self.hosts = [address]
 
     def start(self):
-        run()
+        execute(start, hosts=self.hosts)
+
+    def stop(self):
+        execute(stop, hosts=self.hosts)
+
+    def get_address(self):
+        return self.hosts[0]
