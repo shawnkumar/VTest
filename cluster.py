@@ -33,7 +33,7 @@ class ValCluster(object):
                 hosts = node.get_address()
         hosts = "-node " + hosts
         line = "{base} {cmd} {hosts}".format(base=base, cmd=command, hosts=hosts)
-        if parallel = True:
+        if parallel == True:
             p = Popen(line)
         else:
             local(line)

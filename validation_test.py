@@ -4,7 +4,7 @@ from utils import *
 from complexqueryer import *
 from unittest import assertTrue
 
-class TestValidation(Tester):
+class TestValidation():
 
     def stress_validation_test(self):
         cluster = ValCluster(get_ctool_nodes())
