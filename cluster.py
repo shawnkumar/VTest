@@ -18,7 +18,7 @@ class ValCluster(object):
     def get_nodes(self):
         return self.nodelist
 
-    def get_session(self, nodes, keyspace=None, exclusive=False):
+    def get_session(self, nodes, keyspace=None, exclusive=False, cons_level=None):
         node_ips = []
         for node in nodes:
             node_ips.append(node.get_address())
@@ -30,9 +30,12 @@ class ValCluster(object):
         else:
             cluster = Cluster(node_ips)
             session = cluster.connect()
-        
+
         if keyspace is not None:
-            session.execute('USE %s' % keyspace)
+            session.execute('USE %s;' % keyspace)
+
+        if cons_level is not None:
+            session.execute('CONSISTENCY %s;' % cons_level)
         return session
 
     def stress(self, command, nodes, parallel=False):
@@ -49,3 +52,32 @@ class ValCluster(object):
             p = Popen(line, shell=True)
         else:
             local(line)
+
+    def nodetool(self, command):
+        pass
+
+    def create_ks(self, keyspace, settings):
+        session = self.get_session(nodelist)
+        querytemplate = "CREATE KEYSPACE {name} WITH {options};".format(name=keyspace, options=settings)
+        try:
+            session.execute(querytemplate)
+        except:
+            print "Unable to create keyspace, may already exist"
+
+    def nodetool(self, cmd, nodes, parallel=False):
+        base = 'JAVA_HOME=~/fab/java ~/fab/stress/cassandra-2.1/bin/nodetool'
+        hosts = ""
+        for node in nodes:
+            if hosts != '':
+                hosts += "," + node.get_address()
+            else:
+                hosts = node.get_address()
+        command = "{base} {nodes} {cmds}".format(base=base, nodes=hosts, cmds=cmd)
+        # if capture_output:
+        #     p = subprocess.Popen(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        #     return p.communicate()
+        if parallel:
+            p = Popen(command, shell=True)
+        else:
+            p = subprocess.Popen(command, shell=True)
+            p.wait()

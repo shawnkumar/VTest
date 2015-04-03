@@ -4,9 +4,11 @@ class State(object):
 
     numrows = 0
 
-    def __init__(self, rows=None):
+    def __init__(self, keyspace, cf, rows=None):
         self.statefile = str(uuid.uuid4())
         self.mutable_statefile = str(uuid.uuid4())
+        self.keyspace = keyspace
+        self.column_family = cf
         if rows!=None:
             self.toFile(rows)
 
@@ -29,3 +31,9 @@ class State(object):
 
     def get_num_rows(self):
         return self.numrows
+
+    def get_keyspace(self):
+        return self.keyspace
+
+    def get_cf(self):
+        return self.column_family
