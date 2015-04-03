@@ -2,6 +2,7 @@ from node import ValNode
 from fabric.api import *
 from subprocess import Popen
 from cassandra.cluster import Cluster
+from cassandra.policies import WhiteListRoundRobinPolicy
 
 
 class ValCluster(object):
@@ -23,8 +24,8 @@ class ValCluster(object):
         for node in nodes:
             node_ips.append(node.get_address())
 
-        if exclusive = True:
-            wlrr = WhiteListRoundRobinPolicy([node_ip])
+        if exclusive is True:
+            wlrr = WhiteListRoundRobinPolicy(node_ips)
             cluster = Cluster(node_ips, load_balancing_policy=wlrr)
             session = cluster.connect()
         else:
@@ -35,7 +36,7 @@ class ValCluster(object):
             session.execute('USE %s;' % keyspace)
 
         if cons_level is not None:
-            session.execute('CONSISTENCY %s;' % cons_level)
+            session.default_consistency_level = cons_level
         return session
 
     def stress(self, command, nodes, parallel=False):
@@ -57,10 +58,11 @@ class ValCluster(object):
         pass
 
     def create_ks(self, keyspace, settings):
-        session = self.get_session(nodelist)
+        session = self.get_session(self.nodelist)
         querytemplate = "CREATE KEYSPACE {name} WITH {options};".format(name=keyspace, options=settings)
         try:
             session.execute(querytemplate)
+            return keyspace
         except:
             print "Unable to create keyspace, may already exist"
 

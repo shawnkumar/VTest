@@ -2,9 +2,10 @@ from cluster import ValCluster
 from node import ValNode
 from utils import *
 from complexqueryer import *
-from unittest import assertTrue
+import unittest
 from multiprocessing import Process
 import time
+from validator import Validator
 
 class TestValidation():
 
@@ -12,7 +13,7 @@ class TestValidation():
         cluster = ValCluster(get_ctool_nodes())
         cluster.bootstrap('apache/trunk')
         [node1, node2, node3] = cluster.get_nodes()
-        keyspace = cluster.create_ks("test", "REPLICATION = {'class':'SimpleStrategy','replicat_factor':3)")
+        keyspace = cluster.create_ks("test", "REPLICATION = {'class':'SimpleStrategy','replication_factor':3)")
 
 
         valqueryer = ComplexQueryer(cluster, keyspace, "stresstestcf")

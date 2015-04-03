@@ -4,10 +4,12 @@ from cell import Cell
 from row import Row
 from state import State
 from complexqueryer import ComplexQueryer
+from cassandra import ConsistencyLevel
 
 cluster = Cluster()
 session = cluster.connect()
 
+session.default_consistency_level=ConsistencyLevel.ONE
 
 schema = "CREATE KEYSPACE space WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1};"
 table = "CREATE TABLE tab (key int PRIMARY KEY, val int);"
@@ -30,17 +32,10 @@ session.execute("use space;")
 
 session.execute("insert into tab(key,val) values(1,1);")
 
-query = "select * from tab where key = 2;"
+#query = "select * from tab where key = 2;"
 
 #prepq = session.prepare(query)
 
-result = session.execute(query)
-
-
-
-for idx, thing in enumerate(result):
-    print "here"
-    print thing
 
 
 
